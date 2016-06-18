@@ -40,6 +40,11 @@ class DaySwitcher
         }
     }
 
+    /**
+     * Create a new switch for a specific special day
+     *
+     * @param array $specialDay
+     */
     protected function createSwitch(array $specialDay)
     {
         $date = new \DateTime($specialDay['special_date']);
@@ -166,18 +171,33 @@ class DaySwitcher
         return $hours;
     }
 
+    /**
+     * Delete a normal schedule day record
+     *
+     * @param int $id
+     */
     protected function deleteNormal($id)
     {
         $sql = "DELETE FROM vendor_schedule WHERE id = $id";
         $this->db->query($sql);
     }
 
+    /**
+     * Delete a special day record
+     *
+     * @param int $id
+     */
     protected function deleteSpecial($id)
     {
         $sql = "DELETE FROM vendor_special_day WHERE id = $id";
         $this->db->query($sql);
     }
 
+    /**
+     * Insert a new normal schedule day record
+     *
+     * @param array $normal
+     */
     protected function insertNormal(array $normal)
     {
         $startHour = $normal['start_hour'] === null ? 'NULL' : "'".$normal['start_hour']."'";
@@ -188,6 +208,11 @@ class DaySwitcher
         $this->db->query($sql);
     }
 
+    /**
+     * Insert a new special day record
+     *
+     * @param array $special
+     */
     protected function insertSpecial(array $special)
     {
         $startHour = $special['start_hour'] === null ? 'NULL' : "'".$special['start_hour']."'";
