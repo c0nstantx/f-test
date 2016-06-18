@@ -8,7 +8,12 @@ include_once 'lib/autoloader.php';
 
 /** Boot console application */
 $dbOptions = require_once __DIR__.'/config/db.php';
-$app = new \Foodora\ConsoleApp(array('db' => $dbOptions));
+$app = new \Foodora\ConsoleApp(
+    array(
+        'db' => $dbOptions,
+        'php_min' => '5.3.0'
+    )
+);
 $app->boot($argv);
 
 /** Init DaySwitcher*/

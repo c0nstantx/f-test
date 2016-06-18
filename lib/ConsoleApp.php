@@ -9,6 +9,8 @@ namespace Foodora;
  */
 class ConsoleApp
 {
+    const DEFAULT_MIN_PHP_VERSION = '5.3.0';
+
     protected $options = array();
 
     protected $container = array();
@@ -16,6 +18,7 @@ class ConsoleApp
     public function __construct(array $options)
     {
         $this->options = $options;
+
     }
 
     /**
@@ -27,6 +30,7 @@ class ConsoleApp
      */
     public function boot(array $argv)
     {
+        $this->checkMinVersion();
         try {
             $this->container['db'] = \Foodora\DB\DBFactory::getDB($this->options['db']);
         } catch (\Exception $ex) {
@@ -67,5 +71,18 @@ class ConsoleApp
     public function has($dependency)
     {
         return isset($this->container[$dependency]);
+    }
+
+    protected function checkMinVersion()
+    {
+        if (!isset($this->options['php_min'])) {
+            $this->options['php_min'] = self::DEFAULT_MIN_PHP_VERSION;
+        }
+
+        if ($this->options['php_min'] > PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'.'.PHP_RELEASE_VERSION) {
+            echo "Minimum PHP version required is: {$this->options['php_min']}\n";
+
+            return -1;
+        }
     }
 }
