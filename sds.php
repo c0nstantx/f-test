@@ -6,25 +6,17 @@
 /** Include autoloader */
 include_once 'lib/autoloader.php';
 
-/** @var array $dbOptions  Database connection options */
+/** Boot console application */
 $dbOptions = require_once __DIR__.'/config/db.php';
+$app = new \Foodora\ConsoleApp(array('db' => $dbOptions));
+$app->boot($argv);
 
-/** @var \Foodora\DB\DBInterface $db  Database object */
-try {
-    $db = \Foodora\DB\DBFactory::getDB($dbOptions);
-} catch (\Exception $ex) {
-    echo "Connection to database failed: {$ex->getMessage()}\n";
-
-    return -1;
-}
-
-/** @var \Foodora\DaySwitcher $daySwitcher */
+/** Init DaySwitcher*/
+$db = $app->get('db');
 $daySwitcher = new \Foodora\DaySwitcher($db);
 
 /** Get day to switch */
-$inputParser = new \Foodora\InputParser();
-$inputParser->parse($argv);
-
+$inputParser = $app->get('input_parser');
 $date = new \DateTime($inputParser->getArgument('date'));
 
 /** Check if specific vendor was defined */
