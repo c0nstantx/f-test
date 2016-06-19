@@ -1,6 +1,6 @@
 <?php
 /**
- * Special Day Switcher (SDS)
+ * Special Day Fix (SDF)
  */
 
 /** Include autoloader */
@@ -9,13 +9,14 @@ include_once 'lib/autoloader.php';
 /** Help text */
 $helpText =
 <<<EOD
-    Special days switcher
-    
-    This script switches normal with special days. 
-    It takes a date range and/or vendor id as arguments.
+    Special days fix
 
-    --date                  Date. Define the day for switch (See here for supported formats: http://php.net/manual/en/datetime.formats.php)
+    This script creates a temporary table with normal schedules and assign special
+    day as normal schedule and restore.
+
+    --date                  Date. Define the day to process (See here for supported formats: http://php.net/manual/en/datetime.formats.php)
     --vendor[optional]      Vendor ID. Apply the range for a specific vendor.
+    --restore               Restore that day
     --help                  Display this message.
     \n
 EOD;
@@ -31,9 +32,9 @@ $app = new \Foodora\Model\ConsoleApp(
 );
 $app->boot($argv);
 
-/** Init DaySwitcher*/
+/** Init DayFixer*/
 $db = $app->get('db');
-$daySwitcher = new \Foodora\Model\DaySwitcher($db);
+$dayFixer = new \Foodora\Model\DayFixer($db);
 
 /** Get day to switch */
 $inputParser = $app->get('input_parser');
@@ -46,7 +47,11 @@ if ($inputParser->hasArgument('vendor')) {
     $vendorId = null;
 }
 
-/** Switch day */
-$daySwitcher->switchDay($date, $vendorId);
+/** Fix or restore a day */
+if ($inputParser->hasArgument('restore')) {
+    $dayFixer->restoreDay($date, $vendorId);
+} else {
+    $dayFixer->fixDay($date, $vendorId);
+}
 
 return 0;

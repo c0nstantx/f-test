@@ -1,6 +1,6 @@
 <?php
 
-namespace Foodora;
+namespace Foodora\Model;
 
 /**
  * Main Application for console commands
@@ -39,7 +39,8 @@ class ConsoleApp
             return -1;
         }
 
-        $this->container['input_parser'] = new \Foodora\InputParser();
+        $helpText = isset($this->options['help_text']) ? $this->options['help_text'] : '';
+        $this->container['input_parser'] = new InputParser($helpText);
         $this->container['input_parser']->parse($argv);
 
         return 0;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Foodora;
+namespace Foodora\Model;
 
 /**
  * Input parser for command input arguments
@@ -9,7 +9,16 @@ namespace Foodora;
  */
 class InputParser
 {
+    /** @var array */
     protected $arguments = array();
+
+    /** @var string */
+    protected $helpText;
+
+    public function __construct($helpText)
+    {
+        $this->helpText = $helpText;
+    }
 
     /**
      * Parse input arguments
@@ -19,13 +28,18 @@ class InputParser
     public function parse(array $argv)
     {
         if (in_array('--help', $argv)) {
-            echo $this->getHelp();
+            echo $this->helpText;
 
             exit(0);
         }
 
         for ($i=1; $i<count($argv); $i+=2) {
-            $this->arguments[str_replace('--', '', $argv[$i])] = $argv[$i+1];
+            if ($argv[$i] === '--restore') {
+                $this->arguments[str_replace('--', '', $argv[$i])] = true;
+                $i--;
+            } else {
+                $this->arguments[str_replace('--', '', $argv[$i])] = $argv[$i+1];
+            }
         }
     }
 
@@ -40,7 +54,7 @@ class InputParser
     {
         if (!$this->hasArgument($arg)) {
             echo "Argument '--$arg' wasn't defined. Please see help\n\n";
-            echo $this->getHelp();
+            echo $this->helpText;
 
             exit(-1);
         }
@@ -58,27 +72,5 @@ class InputParser
     public function hasArgument($arg)
     {
         return isset($this->arguments[$arg]);
-    }
-
-    /**
-     * Get command's help
-     *
-     * @return string
-     */
-    protected function getHelp()
-    {
-        return
-<<<EOD
-    Special days switcher
-    
-    This script switches normal with special days. 
-    It takes a date range and/or vendor id as arguments.
-
-    --date                  Date. Define the day for switch (See here for supported formats: http://php.net/manual/en/datetime.formats.php)
-    --vendor[optional]      Vendor ID. Apply the range for a specific vendor.
-    --help                  Display this message.
-    \n
-EOD;
-
     }
 }
