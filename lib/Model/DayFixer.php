@@ -20,14 +20,31 @@ class DayFixer extends AbstractDay
     {
         try {
             $specialDays = $this->dbRepo->getSpecialDays($date, $vendorId);
+            $specialVendor = $specialDays[0]['vendor_id'];
+            $normalDays = $this->dbRepo->getNormalSchedule($specialVendor, $date->format('N'));
+            /* If shop was normally closed */
+            if (empty($normalDays)) {
+                $normalDays = [
+                    [
+                        'vendor_id' => $specialVendor,
+                        'weekday' => $date->format('N'),
+                        'all_day' => true,
+                        'start_hour' => null,
+                        'stop_hour' => null,
+                    ]
+                ];
+            }
+            $saveBackup = true;
             foreach($specialDays as $specialDay) {
                 if ($this->isAlreadyFixed($specialDay)) {
+                    $saveBackup = false;
                     echo "Weekday '{$date->format('N')}' for vendor {$specialDay['vendor_id']} is already fixed\n";
                 } else {
-                    $normalDays = $this->dbRepo->getNormalSchedule($specialDay['vendor_id'], $date->format('N'));
-                    $this->backupDay($normalDays);
                     $this->replaceDay($specialDay, $normalDays);
                 }
+            }
+            if ($saveBackup) {
+                $this->backupDay($normalDays);
             }
 
         } catch (\Exception $ex) {
@@ -58,6 +75,11 @@ class DayFixer extends AbstractDay
                 /**
                  * Build normal schedule from backup
                  */
+                $this->dbRepo->deleteBackup($backupDay['id']);
+
+                if ($backupDay['all_day'] && $backupDay['start_hour'] === null && $backupDay['stop_hour'] === null) {
+                    continue;
+                }
                 $newNormalDays[] = array(
                     'vendor_id' => $backupDay['vendor_id'],
                     'weekday' => $backupDay['weekday'],
@@ -65,8 +87,6 @@ class DayFixer extends AbstractDay
                     'start_hour' => $backupDay['start_hour'],
                     'stop_hour' => $backupDay['stop_hour']
                 );
-
-                $this->dbRepo->deleteBackup($backupDay['id']);
             }
 
             /**
@@ -92,7 +112,9 @@ class DayFixer extends AbstractDay
          * Delete current normal schedule
          */
         foreach($normalDays as $normalDay) {
-            $this->dbRepo->deleteNormal($normalDay['id']);
+            if (isset($normalDay['id'])) {
+                $this->dbRepo->deleteNormal($normalDay['id']);
+            }
         }
 
         /**
