@@ -48,6 +48,7 @@ class DBRepository
             `all_day` tinyint(1) NOT NULL,
             `start_hour` time DEFAULT NULL,
             `stop_hour` time DEFAULT NULL,
+            `event_type` char(10) DEFAULT NULL,
             PRIMARY KEY (`id`),
             KEY `fk_vendor` (`vendor_id`),
             CONSTRAINT `fk_temp_vendor` FOREIGN KEY (`vendor_id`) REFERENCES `vendor` (`id`)
@@ -148,8 +149,8 @@ class DBRepository
     {
         $startHour = $backup['start_hour'] === null ? 'NULL' : "'".$backup['start_hour']."'";
         $stopHour = $backup['stop_hour'] === null ? 'NULL' : "'".$backup['stop_hour']."'";
-        $sql = "INSERT INTO `temp_fix_days` (vendor_id, weekday, all_day, start_hour, stop_hour) 
-        VALUE ({$backup['vendor_id']}, {$backup['weekday']}, {$backup['all_day']}, $startHour, $stopHour);";
+        $sql = "INSERT INTO `temp_fix_days` (vendor_id, weekday, all_day, start_hour, stop_hour, event_type) 
+        VALUE ({$backup['vendor_id']}, {$backup['weekday']}, {$backup['all_day']}, $startHour, $stopHour, '{$backup['event_type']}');";
 
         return $this->db->query($sql);
     }

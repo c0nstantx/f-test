@@ -31,6 +31,7 @@ class DayFixer extends AbstractDay
                         'all_day' => true,
                         'start_hour' => null,
                         'stop_hour' => null,
+                        'event_type' => 'closed'
                     ]
                 ];
             }
@@ -75,18 +76,16 @@ class DayFixer extends AbstractDay
                 /**
                  * Build normal schedule from backup
                  */
-                $this->dbRepo->deleteBackup($backupDay['id']);
-
-                if ($backupDay['all_day'] && $backupDay['start_hour'] === null && $backupDay['stop_hour'] === null) {
-                    continue;
+                if ($backupDay['event_type'] === 'opened') {
+                    $newNormalDays[] = array(
+                        'vendor_id' => $backupDay['vendor_id'],
+                        'weekday' => $backupDay['weekday'],
+                        'all_day' => $backupDay['all_day'],
+                        'start_hour' => $backupDay['start_hour'],
+                        'stop_hour' => $backupDay['stop_hour']
+                    );
                 }
-                $newNormalDays[] = array(
-                    'vendor_id' => $backupDay['vendor_id'],
-                    'weekday' => $backupDay['weekday'],
-                    'all_day' => $backupDay['all_day'],
-                    'start_hour' => $backupDay['start_hour'],
-                    'stop_hour' => $backupDay['stop_hour']
-                );
+                $this->dbRepo->deleteBackup($backupDay['id']);
             }
 
             /**
@@ -145,6 +144,7 @@ class DayFixer extends AbstractDay
                 'all_day' => $normalDay['all_day'],
                 'start_hour' => $normalDay['start_hour'],
                 'stop_hour' => $normalDay['stop_hour'],
+                'event_type' => isset($normalDay['event_type']) ? $normalDay['event_type'] : 'opened'
             );
             $this->dbRepo->insertBackup($backupDay);
         }
